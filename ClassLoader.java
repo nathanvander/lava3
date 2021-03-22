@@ -88,6 +88,8 @@ public class ClassLoader {
 
 		//load methods
 		loadMethods(jcname2,cid,jclass);
+		
+		loadFields(jcname2,cid,jclass);
 
 		//register native names
 		//add all of the native names
@@ -235,6 +237,28 @@ public class ClassLoader {
 			//now store it in the method table
 			MethodRow mr = new MethodRow(nid, cid,isStatic,(byte)params,mcode);
 			char mid = db.newMethod( (MethodInfo)mr);
+		}
+	}
+
+	//all we want to do is load the field names into the names table
+	public void loadFields(String claz,char cid,JavaClass jclass) {
+		Field[] fa = jclass.getFields();
+		for (int i=0;i<fa.length;i++) {
+			Field f = fa[i];
+
+			String fname = f.getName();
+			String sig = f.getSignature();
+
+			//similar to getFullName method above
+			String complete_name = claz + ":" +fname + ":"+sig;
+			log("creating method "+complete_name);
+
+			//all we need is the name id
+			char nid = db.getNameId(complete_name);
+			if (nid==0) {
+				nid = db.newName(Name.T_FIELD,cid,complete_name);
+				log("name "+complete_name+" added as "+(int)nid);
+			}
 		}
 	}
 }
